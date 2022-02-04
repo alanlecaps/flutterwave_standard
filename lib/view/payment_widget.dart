@@ -55,7 +55,23 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
   @override
   Widget build(BuildContext context) {
     controller = NavigationController(Client(), widget.style, this);
-    _currentAmount = (pick(amount).asDoubleOrThrow() * pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow()).toStringAsFixed(2);
+    if (widget.request.currencies.keys.length == 1) {
+      _currentAmount = (pick(amount).asDoubleOrThrow() * 1).toStringAsFixed(2);
+    } else {
+      if (widget.request.currency!.contains('USD') && selectedCurrency == 'USD') {
+        _currentAmount = (pick(amount).asDoubleOrThrow() * pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow()).toStringAsFixed(2);
+      } else if (widget.request.currency == selectedCurrency) {
+        _currentAmount = (pick(amount).asDoubleOrThrow() * 1).toStringAsFixed(2);
+      } else if (widget.request.currency!.contains('USD') && selectedCurrency != 'USD') {
+        _currentAmount = (pick(amount).asDoubleOrThrow() * pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow()).toStringAsFixed(2);
+      } else if (!widget.request.currency!.contains('USD') && selectedCurrency == 'USD') {
+        _currentAmount = (pick(amount).asDoubleOrThrow() / pick(widget.request.currencies[widget.request.currency]).asDoubleOrThrow()).toStringAsFixed(2);
+      } else if (!widget.request.currency!.contains('USD') && selectedCurrency != 'USD') {
+        _currentAmount = ((pick(amount).asDoubleOrThrow() / pick(widget.request.currencies[widget.request.currency]).asDoubleOrThrow()) *
+                pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow())
+            .toStringAsFixed(2);
+      }
+    }
     return MaterialApp(
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: widget.request.isTestMode,
@@ -211,8 +227,6 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
   void _handleButtonClicked() {
     if (_isDisabled) return;
     if (_formKey.currentState!.validate()) {
-      widget.request.currency = this.selectedCurrency;
-
       _showConfirmDialog();
     }
   }
@@ -222,6 +236,7 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
       Navigator.of(widget.mainContext).pop(); // to remove confirmation dialog
       _toggleButtonActive(false);
       widget.request.amount = _currentAmount;
+      widget.request.currency = this.selectedCurrency;
       controller.startTransaction(widget.request);
       _toggleButtonActive(true);
     } catch (error) {
@@ -242,7 +257,7 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
   }
 
   void _showConfirmDialog() {
-    FlutterwaveViewUtils.showConfirmPaymentModal(widget.mainContext, widget.request.currency, _currentAmount, widget.style.getMainTextStyle(),
+    FlutterwaveViewUtils.showConfirmPaymentModal(widget.mainContext, selectedCurrency, _currentAmount, widget.style.getMainTextStyle(),
         widget.style.getDialogBackgroundColor(), widget.style.getDialogCancelTextStyle(), widget.style.getDialogContinueTextStyle(), _handlePayment);
   }
 

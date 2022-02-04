@@ -40,6 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool isTestMode = true;
   final pbk = "FLWPUBK_TEST";
+  var currencies = <String, dynamic>{'NGN': 550, 'GHS': 210};
 
   @override
   Widget build(BuildContext context) {
@@ -211,7 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
       style: style,
       publicKey: this.publicKeyController.text.trim().isEmpty ? this.getPublicKey() : this.publicKeyController.text.trim(),
       currency: this.selectedCurrency,
-      currencies: {'NGN': 592.62},
+      currencies: currencies,
       txRef: Uuid().v1(),
       amount: this.amountController.text.toString().trim(),
       customer: customer,
@@ -237,20 +238,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void _openBottomSheet() {
     showModalBottomSheet(
-        context: this.context,
-        builder: (context) {
-          return this._getCurrency();
-        });
+      context: this.context,
+      builder: (context) {
+        return this._getCurrency();
+      },
+    );
   }
 
   Widget _getCurrency() {
-    final currencies = ["NGN", "RWF", "UGX", "ZAR", "USD", "GHS", "TZS"];
     return Container(
       height: 250,
       margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
       color: Colors.white,
       child: ListView(
-        children: currencies
+        children: currencies.keys
             .map((currency) => ListTile(
                   onTap: () => {this._handleCurrencyTap(currency)},
                   title: Column(
