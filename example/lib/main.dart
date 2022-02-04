@@ -64,8 +64,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   keyboardType: TextInputType.number,
                   style: TextStyle(color: Colors.black),
                   decoration: InputDecoration(hintText: "Amount"),
-                  validator: (value) =>
-                      value.isNotEmpty ? null : "Amount is required",
+                  validator: (value) => value.isNotEmpty ? null : "Amount is required",
                 ),
               ),
               Container(
@@ -79,8 +78,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   decoration: InputDecoration(
                     hintText: "Currency",
                   ),
-                  validator: (value) =>
-                      value.isNotEmpty ? null : "Currency is required",
+                  validator: (value) => value.isNotEmpty ? null : "Currency is required",
                 ),
               ),
               Container(
@@ -179,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
       buttonColor: Color(0xffd0ebff),
       buttonTextStyle: TextStyle(
         color: Colors.deepOrangeAccent,
-        fontSize: 16,
+        fontSize: 12,
       ),
       appBarColor: Color(0xff8fa33b),
       dialogCancelTextStyle: TextStyle(
@@ -191,45 +189,38 @@ class _MyHomePageState extends State<MyHomePage> {
         fontSize: 18,
       ),
       mainBackgroundColor: Colors.indigo,
-      mainTextStyle: TextStyle(
-        color: Colors.indigo,
-        fontSize: 19,
-        letterSpacing: 2
-      ),
+      mainTextStyle: TextStyle(color: Colors.indigo, fontSize: 19, letterSpacing: 2),
       dialogBackgroundColor: Colors.greenAccent,
       appBarIcon: Icon(Icons.message, color: Colors.purple),
-      buttonText: "Pay $selectedCurrency${amountController.text}",
+      buttonText: "Pay",
       appBarTitleTextStyle: TextStyle(
         color: Colors.purpleAccent,
         fontSize: 18,
       ),
     );
 
-    final Customer customer = Customer(
-        name: "FLW Developer",
-        phoneNumber: this.phoneNumberController.text ?? "12345678",
-        email: "customer@customer.com");
-    
+    final Customer customer = Customer(name: "FLW Developer", phoneNumber: this.phoneNumberController.text ?? "12345678", email: "customer@customer.com");
+
     final subAccounts = [
       SubAccount(id: "RS_1A3278129B808CB588B53A14608169AD", transactionChargeType: "flat", transactionPercentage: 25),
       SubAccount(id: "RS_C7C265B8E4B16C2D472475D7F9F4426A", transactionChargeType: "flat", transactionPercentage: 50)
     ];
 
     final Flutterwave flutterwave = Flutterwave(
-        context: context,
-        style: style,
-        publicKey: this.publicKeyController.text.trim().isEmpty
-            ? this.getPublicKey()
-            : this.publicKeyController.text.trim(),
-        currency: this.selectedCurrency,
-        txRef: Uuid().v1(),
-        amount: this.amountController.text.toString().trim(),
-        customer: customer,
-        subAccounts: subAccounts,
-        paymentOptions: "card, payattitude",
-        customization: Customization(title: "Test Payment"),
-        redirectUrl: "https://www.google.com",
-        isTestMode: false);
+      context: context,
+      style: style,
+      publicKey: this.publicKeyController.text.trim().isEmpty ? this.getPublicKey() : this.publicKeyController.text.trim(),
+      currency: this.selectedCurrency,
+      currencies: {'NGN': 592.62},
+      txRef: Uuid().v1(),
+      amount: this.amountController.text.toString().trim(),
+      customer: customer,
+      subAccounts: subAccounts,
+      paymentOptions: "card, payattitude",
+      customization: Customization(title: "Test Payment"),
+      redirectUrl: "https://www.google.com",
+      isTestMode: false,
+    );
     final ChargeResponse response = await flutterwave.charge();
     if (response != null) {
       this.showLoading(response.status);

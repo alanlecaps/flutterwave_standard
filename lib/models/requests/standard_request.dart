@@ -22,7 +22,7 @@ class StandardRequest {
   String? paymentPlanId;
   List<SubAccount>? subAccounts;
   Map<dynamic, dynamic>? meta;
-  Map<dynamic, dynamic> currencies;
+  Map<String, dynamic> currencies;
 
   StandardRequest(
       {required this.txRef,

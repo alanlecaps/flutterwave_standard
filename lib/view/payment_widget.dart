@@ -1,3 +1,4 @@
+import 'package:deep_pick/deep_pick.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart';
 
@@ -30,21 +31,31 @@ class PaymentWidget extends StatefulWidget {
   State<StatefulWidget> createState() => _PaymentState();
 }
 
-class _PaymentState extends State<PaymentWidget>
-    implements TransactionCallBack {
+class _PaymentState extends State<PaymentWidget> implements TransactionCallBack {
   final _navigatorKey = GlobalKey<NavigatorState>();
+  final _formKey = GlobalKey<FormState>();
   bool _isDisabled = false;
   late NavigationController controller;
+  var currencyController = TextEditingController();
+  String selectedCurrency = "";
+  String _currentAmount = '0.00';
+
+  var amount = '';
 
   @override
   void initState() {
     _isDisabled = false;
+    amount = widget.request.amount;
+    selectedCurrency = widget.request.currency!;
+    widget.request.currencies.putIfAbsent('USD', () => 1);
+    currencyController = TextEditingController(text: '');
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     controller = NavigationController(Client(), widget.style, this);
+    _currentAmount = (pick(amount).asDoubleOrThrow() * pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow()).toStringAsFixed(2);
     return MaterialApp(
       navigatorKey: _navigatorKey,
       debugShowCheckedModeBanner: widget.request.isTestMode,
@@ -58,20 +69,92 @@ class _PaymentState extends State<PaymentWidget>
           widget.style.getAppBarColor(),
         ),
         body: SafeArea(
-          child: Container(
-            width: double.infinity,
-            height: 50,
-            margin: EdgeInsets.fromLTRB(20, 50, 20, 0),
-            child: ElevatedButton(
-              autofocus: true,
-              onPressed: _handleButtonClicked,
-              style: ElevatedButton.styleFrom(
-                  primary: widget.style.getButtonColor(),
-                  textStyle: widget.style.getButtonTextStyle()),
-              child: Text(
-                widget.style.getButtonText(),
-                style: widget.style.getButtonTextStyle(),
-              ),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                if (widget.request.currencies.keys.length > 1)
+                  Container(
+                    margin: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'The original charge amount (',
+                        style: Theme.of(context).textTheme.caption,
+                        children: [
+                          TextSpan(
+                            text: '${widget.request.currency} $amount',
+                            style: widget.style.getButtonTextStyle().copyWith(fontWeight: FontWeight.bold),
+                            children: [
+                              TextSpan(
+                                text: ') for this transaction (fees exclusive) has been converted to your preferred currency for payment. You will be charged ',
+                                style: Theme.of(context).textTheme.caption,
+                                children: [
+                                  TextSpan(
+                                    text: '$selectedCurrency $_currentAmount',
+                                    style: widget.style.getButtonTextStyle().copyWith(fontWeight: FontWeight.bold),
+                                    children: [
+                                      TextSpan(
+                                        text: ' at a rate of ',
+                                        style: Theme.of(context).textTheme.caption,
+                                        children: [
+                                          TextSpan(
+                                            text: '$selectedCurrency ${pick(widget.request.currencies[selectedCurrency]).asDoubleOrThrow()}',
+                                            style: widget.style.getButtonTextStyle().copyWith(fontWeight: FontWeight.bold),
+                                            children: [
+                                              TextSpan(
+                                                text: ' to ',
+                                                style: Theme.of(context).textTheme.caption,
+                                                children: [
+                                                  TextSpan(
+                                                    text: '${widget.request.currency} ${widget.request.currencies[widget.request.currency]}',
+                                                    style: widget.style.getButtonTextStyle().copyWith(fontWeight: FontWeight.bold),
+                                                  ),
+                                                ],
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (widget.request.currencies.keys.length > 1)
+                  Container(
+                    margin: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                    child: TextFormField(
+                      controller: this.currencyController,
+                      textInputAction: TextInputAction.next,
+                      style: widget.style.getButtonTextStyle(),
+                      readOnly: true,
+                      onTap: this._openBottomSheet,
+                      decoration: InputDecoration(
+                        hintText: "Select Preferred Currency",
+                      ),
+                      validator: (value) => value!.isNotEmpty ? null : "Please select a currency to proceed",
+                    ),
+                  ),
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  margin: EdgeInsets.fromLTRB(20, 50, 20, 0),
+                  child: ElevatedButton(
+                    autofocus: true,
+                    onPressed: _handleButtonClicked,
+                    style: ElevatedButton.styleFrom(primary: widget.style.getButtonColor(), textStyle: widget.style.getButtonTextStyle()),
+                    child: Text(
+                      '${widget.style.getButtonText()} $selectedCurrency $_currentAmount',
+                      style: widget.style.getButtonTextStyle(),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -79,15 +162,66 @@ class _PaymentState extends State<PaymentWidget>
     );
   }
 
+  void _openBottomSheet() {
+    showModalBottomSheet(
+      context: this.context,
+      builder: (context) {
+        return this._getCurrency();
+      },
+    );
+  }
+
+  Widget _getCurrency() {
+    final currencies = widget.request.currencies.keys.toList();
+    return Container(
+      height: 250,
+      margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+      color: Colors.white,
+      child: ListView(
+        children: currencies
+            .map(
+              (currency) => ListTile(
+                onTap: () => {this._handleCurrencyTap(currency)},
+                title: Column(
+                  children: [
+                    Text(
+                      currency,
+                      textAlign: TextAlign.start,
+                      style: widget.style.getButtonTextStyle(),
+                    ),
+                    SizedBox(height: 4),
+                    Divider(height: 1)
+                  ],
+                ),
+              ),
+            )
+            .toList(),
+      ),
+    );
+  }
+
+  _handleCurrencyTap(String currency) {
+    this.setState(() {
+      this.selectedCurrency = currency;
+      this.currencyController.text = currency;
+    });
+    Navigator.pop(this.context);
+  }
+
   void _handleButtonClicked() {
     if (_isDisabled) return;
-    _showConfirmDialog();
+    if (_formKey.currentState!.validate()) {
+      widget.request.currency = this.selectedCurrency;
+
+      _showConfirmDialog();
+    }
   }
 
   void _handlePayment() async {
     try {
       Navigator.of(widget.mainContext).pop(); // to remove confirmation dialog
       _toggleButtonActive(false);
+      widget.request.amount = _currentAmount;
       controller.startTransaction(widget.request);
       _toggleButtonActive(true);
     } catch (error) {
@@ -108,15 +242,8 @@ class _PaymentState extends State<PaymentWidget>
   }
 
   void _showConfirmDialog() {
-    FlutterwaveViewUtils.showConfirmPaymentModal(
-        widget.mainContext,
-        widget.request.currency,
-        widget.request.amount,
-        widget.style.getMainTextStyle(),
-        widget.style.getDialogBackgroundColor(),
-        widget.style.getDialogCancelTextStyle(),
-        widget.style.getDialogContinueTextStyle(),
-        _handlePayment);
+    FlutterwaveViewUtils.showConfirmPaymentModal(widget.mainContext, widget.request.currency, _currentAmount, widget.style.getMainTextStyle(),
+        widget.style.getDialogBackgroundColor(), widget.style.getDialogCancelTextStyle(), widget.style.getDialogContinueTextStyle(), _handlePayment);
   }
 
   @override
@@ -132,8 +259,7 @@ class _PaymentState extends State<PaymentWidget>
 
   @override
   onTransactionSuccess(String id, String txRef) {
-    final ChargeResponse chargeResponse = ChargeResponse(
-        status: "success", success: true, transactionId: id, txRef: txRef);
+    final ChargeResponse chargeResponse = ChargeResponse(status: "success", success: true, transactionId: id, txRef: txRef);
     Navigator.pop(this.widget.mainContext, chargeResponse);
   }
 }

@@ -22,7 +22,7 @@ class Flutterwave {
   String? redirectUrl;
   List<SubAccount>? subAccounts;
   Map<dynamic, dynamic>? meta;
-  Map<dynamic, dynamic> currencies;
+  Map<String, dynamic> currencies;
   FlutterwaveStyle? style;
 
   Flutterwave(
@@ -34,31 +34,31 @@ class Flutterwave {
       required this.paymentOptions,
       required this.customization,
       required this.isTestMode,
+      required this.currencies,
       this.currency,
-      this.currencies = const <String, dynamic>{'USD': 1},
       this.paymentPlanId,
       this.redirectUrl,
       this.subAccounts,
       this.meta,
       this.style});
 
-
   /// Starts Standard Transaction
   Future<ChargeResponse> charge() async {
     final request = StandardRequest(
-        txRef: txRef,
-        amount: amount,
-        customer: customer,
-        paymentOptions: paymentOptions,
-        customization: customization,
-        isTestMode: isTestMode,
-        publicKey: publicKey,
-        currency: currency,
-        currencies:currencies,
-        paymentPlanId: paymentPlanId,
-        redirectUrl: redirectUrl ?? Utils.DEFAULT_URL,
-        subAccounts: subAccounts,
-        meta: meta,);
+      txRef: txRef,
+      amount: amount,
+      customer: customer,
+      paymentOptions: paymentOptions,
+      customization: customization,
+      isTestMode: isTestMode,
+      publicKey: publicKey,
+      currency: currency,
+      currencies: currencies,
+      paymentPlanId: paymentPlanId,
+      redirectUrl: redirectUrl ?? Utils.DEFAULT_URL,
+      subAccounts: subAccounts,
+      meta: meta,
+    );
 
     return await Navigator.push(
       context,
