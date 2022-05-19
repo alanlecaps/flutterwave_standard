@@ -28,7 +28,7 @@ class FlutterwaveInAppBrowser extends InAppBrowser {
   }
 
   _processResponse(Uri url, String? status, String? txRef, String? id) {
-    if ("successful" == status) {
+    if (status == "successful" || status == "completed" || status != null) {
       callBack.onTransactionSuccess(id!, txRef!);
     } else {
       callBack.onCancelled();
