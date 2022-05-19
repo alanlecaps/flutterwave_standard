@@ -253,7 +253,7 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
 
   void _showErrorAndClose(final String errorMessage) {
     FlutterwaveViewUtils.showToast(widget.mainContext, errorMessage);
-    Navigator.pop(widget.mainContext); // return response to user
+    Navigator.pop(widget.mainContext, null); // return response to user
   }
 
   void _showConfirmDialog() {
@@ -269,12 +269,12 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
   @override
   onCancelled() {
     FlutterwaveViewUtils.showToast(widget.mainContext, "Transaction Cancelled");
-    Navigator.pop(widget.mainContext);
+    Navigator.pop(widget.mainContext, null);
   }
 
   @override
   onTransactionSuccess(String id, String txRef) {
-    final ChargeResponse chargeResponse = ChargeResponse(status: "success", success: true, transactionId: id, txRef: txRef);
+    final ChargeResponse? chargeResponse = ChargeResponse(status: "success", success: true, transactionId: id, txRef: txRef);
     Navigator.pop(this.widget.mainContext, chargeResponse);
   }
 }
