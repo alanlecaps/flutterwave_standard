@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool isTestMode = true;
   final pbk = "FLWPUBK_TEST";
-  var currencies = <String, dynamic>{'NGN': 550, 'GHS': 210};
+  var currencies = <String, dynamic>{'NGN': 1, 'GHS': 210};
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +217,7 @@ class _MyHomePageState extends State<MyHomePage> {
       amount: this.amountController.text.toString().trim(),
       customer: customer,
       subAccounts: subAccounts,
-      paymentOptions: "card, payattitude",
+      paymentOptions: "qr, credit, paga, account, ussd, card, banktransfer, mobilemoney, barter, 1voucher, payattitude",
       customization: Customization(title: "Test Payment"),
       redirectUrl: "https://www.google.com",
       isTestMode: false,

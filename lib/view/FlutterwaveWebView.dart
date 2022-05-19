@@ -9,14 +9,14 @@ class FlutterwaveInAppBrowser extends InAppBrowser {
   var hasCompletedProcessing = false;
   var haveCallBacksBeenCalled = false;
 
-  FlutterwaveInAppBrowser(
-      {this.redirectUrl = Utils.DEFAULT_URL, required this.callBack});
+  FlutterwaveInAppBrowser({this.redirectUrl = Utils.DEFAULT_URL, required this.callBack});
 
   @override
   Future onBrowserCreated() async {}
 
   @override
   Future onLoadStart(url) async {
+    print("========================$url========================");
     final status = url?.queryParameters["status"];
     final txRef = url?.queryParameters["tx_ref"];
     final id = url?.queryParameters["transaction_id"];
