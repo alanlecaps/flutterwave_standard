@@ -163,7 +163,7 @@ class _PaymentState extends State<PaymentWidget> implements TransactionCallBack 
                   child: ElevatedButton(
                     autofocus: true,
                     onPressed: _handleButtonClicked,
-                    style: ElevatedButton.styleFrom(primary: widget.style.getButtonColor(), textStyle: widget.style.getButtonTextStyle()),
+                    style: ElevatedButton.styleFrom(backgroundColor: widget.style.getButtonColor(), textStyle: widget.style.getButtonTextStyle()),
                     child: Text(
                       '${widget.style.getButtonText()} $selectedCurrency $_currentAmount',
                       style: widget.style.getButtonTextStyle(),
